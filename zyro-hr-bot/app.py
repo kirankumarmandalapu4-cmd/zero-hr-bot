@@ -55,11 +55,15 @@ PERSONAL_NOTE = " Individual details are not available in the HR documents."
 def title_of(src):
     return re.sub(r"^\d+_", "", src).replace(".pdf", "").replace("_", " ")
 
-
 @st.cache_resource(show_spinner="Loading HR policies...")
 def build_index():
     docs = []
-    for p in sorted(glob.glob("data/*.pdf")):
+    base = os.path.dirname(os.path.abspath(__file__))
+    pdf_paths = sorted(glob.glob(os.path.join(base, "data", "*.pdf")))
+    if not pdf_paths:
+        st.error("No PDFs found in the data folder.")
+        st.stop()
+    for p in pdf_paths:
         for d in PyPDFLoader(p).load():
             d.metadata["source"] = os.path.basename(p)
             docs.append(d)
